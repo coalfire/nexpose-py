@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+
+import argparse
+
+import nexpose
+import get_credentials
+
+
+def main():
+    """
+    Parse arguments
+    """
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "-u",
+        "--user",
+        help="""User for authentication to CoalfireOne.
+        Default is to pull from environmental variable NEXPOSE_USER.
+        If that variable is not set, prompt.
+        """,
+        action="store",
+    )
+    parser.add_argument(
+        "-p",
+        "--password",
+        help="""Password for authentication to Nexpose.
+        Default is to pull from environmental variable NEXPOSE_PASS.
+        If that variable is not set, prompt.
+        """,
+        action="store",
+    )
+    parser.add_argument(
+        "-b",
+        "--baseurl",
+        help="""Base url of Nexpose API.
+        Default: https://localhost
+        """,
+        action="store",
+        default="https://localhost",
+    )
+    parser.add_argument(
+        "-P",
+        "--port",
+        help="""Port the Nexpose API runs on.
+        Default is 3780
+        """,
+        action="store",
+        default="3780",
+    )
+    parser.add_argument(
+        "-k",
+        "--insecure",
+        help="""Allow operation to proceed even if connection is insecure.
+        Do not use this in production.
+        """,
+        action="store_false",
+        default=True,
+        dest="verify",
+    )
+
+    args = parser.parse_args()
+
+    user = args.user
+    password = args.password
+    base_url = ':'.join([args.baseurl, args.port])
+    verify = args.verify
+
+    if user is None:
+        user = get_credentials.user()
+
+    if password is None:
+        password = get_credentials.password()
+
+    engine_pools = nexpose.engine_pools(
+            base_url=base_url,
+            user=user,
+            password=password,
+            verify=verify,
+        )
+
+    print(engine_pools.text)
+
+
+if __name__ == "__main__":
+    main()
