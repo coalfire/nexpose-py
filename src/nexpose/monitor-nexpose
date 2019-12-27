@@ -176,6 +176,15 @@ def main():
         default="/var/lib/node_exporter/textfile_collector",
         dest="export_dir",
     )
+    parser.add_argument(
+        "-s",
+        "--single-pass",
+        help="""Perform a single pass collecting data and exit,
+        instead of repeating forever.
+        """,
+        action="store_true",
+        default=False,
+    )
 
     args = parser.parse_args()
 
@@ -184,6 +193,7 @@ def main():
     base_url = ":".join([args.baseurl, args.port])
     verify = args.verify
     export_dir = args.export_dir
+    single_pass = args.single_pass
 
     if user is None:
         user = get_credentials.user()
@@ -200,6 +210,8 @@ def main():
             export_metrics(metrics, export_dir)
         except nexpose.requests.exceptions.RequestException:
             pass
+        if single_pass:
+            break
         sleep(60)
 
 
