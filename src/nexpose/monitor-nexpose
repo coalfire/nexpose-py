@@ -119,11 +119,23 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
+        "-c",
+        "--credentials",
+        help="""Credential file for authentication to Nexpose.
+        Default is $HOME/.nexpose-credentials.yaml, formatted thus:
+        username: USERNAME
+        password: PASSWORD
+        """,
+        action="store",
+        default=os.path.join(os.environ['HOME'], '.nexpose-credentials.yaml')
+    )
+    parser.add_argument(
         "-u",
         "--user",
         help="""User for authentication to Nexpose.
-        Default is to pull from environmental variable NEXPOSE_USER.
-        If that variable is not set, prompt.
+        Default is to pull from environmental variable NEXPOSE_USER,
+        or from a credentials file.
+        If neither of those are set, prompt.
         """,
         action="store",
     )
@@ -131,8 +143,9 @@ def main():
         "-p",
         "--password",
         help="""Password for authentication to Nexpose.
-        Default is to pull from environmental variable NEXPOSE_PASS.
-        If that variable is not set, prompt.
+        Default is to pull from environmental variable NEXPOSE_PASS,
+        or from a credentials file.
+        If neither of those are set, prompt.
         """,
         action="store",
     )
@@ -188,6 +201,8 @@ def main():
 
     args = parser.parse_args()
 
+
+    credentials = args.credentials
     user = args.user
     password = args.password
     base_url = ":".join([args.baseurl, args.port])
@@ -196,10 +211,10 @@ def main():
     single_pass = args.single_pass
 
     if user is None:
-        user = get_credentials.user()
+        user = get_credentials.user(credentials)
 
     if password is None:
-        password = get_credentials.password()
+        password = get_credentials.password(credentials)
 
     while True:
         try:

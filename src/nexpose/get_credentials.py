@@ -7,23 +7,30 @@ import getpass
 from os import environ
 
 
-def user():
+def user(credentials):
     """
-    Return user (string), taken from environment or prompt
+    Return user (string), taken from environment, credential file, or prompt
     """
     try:
         nexpose_user = environ["NEXPOSE_USER"]
     except KeyError:
-        nexpose_user = getpass.getpass(prompt="Nexpose user:")
+        try:
+            nexpose_user = yaml.load(open(credentials))['username']
+        except [FileNotFoundError, TypeError, KeyError]:
+            nexpose_user = getpass.getpass(prompt="Nexpose user:")
+
     return nexpose_user
 
 
-def password():
+def password(credentials):
     """
-    Return key (string), taken from environment or prompt
+    Return key (string), taken from environment, credential file, or prompt
     """
     try:
         nexpose_password = environ["NEXPOSE_PASS"]
     except KeyError:
-        nexpose_password = getpass.getpass(prompt="Nexpose password:")
+        try:
+            nexpose_password = yaml.load(open(credentials))['password']
+        except [FileNotFoundError, TypeError, KeyError]:
+            nexpose_password = getpass.getpass(prompt="Nexpose password:")
     return nexpose_password
