@@ -27,7 +27,7 @@ def get_scans(base_url, user, password, verify):
         )
         for scan in scan_page["resources"]:
             yield scan
-        if page + 1 == scan_page["page"]["totalPages"]:
+        if page + 1 >= scan_page["page"]["totalPages"]:
             break
 
 
