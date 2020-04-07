@@ -57,6 +57,7 @@ def get_metrics(scans):
                 metrics["message"]["insufficient_resources"] += 1
             if "console cannot contact the scan engine" in this_message:
                 metrics["message"]["cannot_contact_engine"] += 1
+            metrics["raw_messages"][this_message] += 1
 
     return metrics
 
