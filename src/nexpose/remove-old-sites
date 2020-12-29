@@ -84,20 +84,20 @@ def main():
     if password is None:
         password = get_credentials.password()
 
-    pages = nexpose.sites(
+    login = nexpose.login(
         base_url=base_url,
         user=user,
         password=password,
         verify=verify,
-    )["page"]["totalPages"]
+    )
+
+    pages = nexpose.sites(login=login)["page"]["totalPages"]
     site_count = 0
     tried = 0
     deleted = 0
 
     for page in range(pages):
-        resources = nexpose.sites(
-            base_url=base_url, user=user, password=password, verify=verify, page=page
-        )["resources"]
+        resources = nexpose.sites(login=login, page=page)["resources"]
         site_ids = [
             resource["id"]
             for resource in resources
@@ -106,11 +106,11 @@ def main():
         for site_id in site_ids:
             site_count += 1
             print(f"checking site {site_id}")
-            if nexpose.site_id_older_than(site_id=site_id, days=90, base_url=base_url, user=user, password=password, verify=verify):
+            if nexpose.site_id_older_than(login=login, site_id=site_id, days=90):
                 tried +=1
                 try:
                     print(f"deleting site {site_id}")
-                    nexpose.delete_site(site_id=site_id, base_url=base_url, user=user, password=password, verify=verify)
+                    nexpose.delete_site(login=login, site_id=site_id)
                     print(f"deleted site {site_id}")
                     deleted += 1
                 except nexpose.ResponseNotOK as err:

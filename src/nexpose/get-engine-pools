@@ -72,14 +72,16 @@ def main():
     if password is None:
         password = get_credentials.password()
 
-    engine_pools = nexpose.engine_pools(
-            base_url=base_url,
-            user=user,
-            password=password,
-            verify=verify,
-        )
+    login = nexpose.login(
+        base_url=base_url,
+        user=user,
+        password=password,
+        verify=verify,
+    )
 
-    print(engine_pools.text)
+    engine_pools = nexpose.engine_pools(login=login)
+
+    print(engine_pools)
 
 
 if __name__ == "__main__":

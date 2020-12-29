@@ -68,6 +68,13 @@ def main():
     if password is None:
         password = get_credentials.password()
 
+    login = nexpose.login(
+        base_url=base_url,
+        user=user,
+        password=password,
+        verify=verify,
+    )
+
     role = {
         "description": "Read-only privileges adequate for monitoring health",
         "id": "monitor",
@@ -75,7 +82,7 @@ def main():
         "privileges": [ "view-asset-group-asset-data", "view-site-asset-data" ]
         } 
 
-    nexpose.create_role(role=role, base_url=base_url, user=user, password=password, verify=verify) 
+    print(nexpose.create_role(login=login, role=role))
 
 if __name__ == "__main__":
     main()

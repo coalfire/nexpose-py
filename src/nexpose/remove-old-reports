@@ -71,40 +71,23 @@ def main():
     if password is None:
         password = get_credentials.password()
 
-    pages = nexpose.reports(
-            base_url=base_url,
-            user=user,
-            password=password,
-            verify=verify,
-        )['page']['totalPages']
+    login = nexpose.login(
+        base_url=base_url,
+        user=user,
+        password=password,
+        verify=verify,
+    )
 
-    print(pages)
+    pages = nexpose.reports(login=login)["page"]["totalPages"]
+
     for page in range(pages):
-        resources = nexpose.reports(
-                   base_url=base_url,
-                   user=user,
-                   password=password,
-                   verify=verify,
-                   page=page
-            )['resources']
+        resources = nexpose.reports(login=login, page=page)["resources"]
         report_ids = [resource['id'] for resource in resources]
-        for id in report_ids:
-            history = nexpose.report_history(
-                   report_id = id,
-                   base_url=base_url,
-                   user=user,
-                   password=password,
-                   verify=verify
-                   )
+        for report_id in report_ids:
+            history = nexpose.report_history(login=login, report_id=report_id)
             if len(history['resources']) == 0:
-                nexpose.delete_report(
-                   report_id = id,
-                   base_url=base_url,
-                   user=user,
-                   password=password,
-                   verify=verify
-                   )
-                print(id)
+                nexpose.delete_report(login=login, report_id=report_id)
+                print(report_id)
 
 
 if __name__ == "__main__":

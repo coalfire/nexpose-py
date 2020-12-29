@@ -3,7 +3,7 @@
 """
 Python3 bindings for the Nexpose API v3
 """
-
+from collections import namedtuple
 from datetime import datetime, timedelta
 import urllib3
 urllib3.disable_warnings()
@@ -27,7 +27,6 @@ class ResponseNotOK(NexposeException):
     """
 
 
-
 def _require_response_200_ok(response):
     """
     Accept a requests.response object.
@@ -41,124 +40,136 @@ def _require_response_200_ok(response):
     return True
 
 
-def engines(*, base_url, user, password, verify=True):
+def login(*, base_url, user, password, verify=True):
     """
-    Accept named args base_url, username, password (strings)
-    Return scan engines.
+    Accept named args base_url, username, password (strings),
+    optionally verify (Boolean default True).
+    Return a named tuple used for Nexpose login.
     """
-    url = base_url + "/api/3/scan_engines"
+    l = namedtuple("Login", ['base_url', 'user', 'password', 'verify'])
+    return l(base_url=base_url, user=user, password=password, verify=verify)
+
+
+def get(*, login, endpoint, params=[]):
+    """
+    Accept named args login (nexpose.login), endpoint (string), optional params.
+    Return get against nexpose.
+    """
+    url = f"{login.base_url}/{endpoint}"
     head = {"Accept": "application/json"}
     response = requests.get(
-        url, auth=(user, password), headers=head, verify=verify
-    )
-    _require_response_200_ok(response)
-
-    return response.json()['resources']
-
-def engine_pools(*, base_url, user, password, verify=True):
-    """
-    Accept named args base_url, username, password (strings)
-    Return pools.
-    """
-    url = base_url + "/api/3/scan_engine_pools"
-    head = {"Accept": "application/json"}
-    response = requests.get(
-        url, auth=(user, password), headers=head, verify=verify
-    )
-    _require_response_200_ok(response)
-
-    return response.json()
-
-def reports(*, base_url, user, password, verify=True, page=0, size=10):
-    """
-    Accept named args base_url, username, password (strings)
-    Return reports response.
-    """
-    url = base_url + "/api/3/reports"
-    head = {"Accept": "application/json"}
-    params = {'page': page, 'size': size}
-    response = requests.get(
-        url, auth=(user, password), headers=head, verify=verify, params = params
+        url, 
+        auth=(login.user, login.password),
+        headers=head,
+        verify=login.verify,
+        params=params
     )
     _require_response_200_ok(response)
 
     return response.json()
 
-def report_history(*, report_id, base_url, user, password, verify=True):
-    """
-    Accept named args report_id, base_url, username, password (strings)
-    Return report history reponse.
-    """
-    url = base_url + "/api/3/reports/" + str(report_id) + "/history"
-    head = {"Accept": "application/json"}
-    response = requests.get(
-        url, auth=(user, password), headers=head, verify=verify
-    )
-    _require_response_200_ok(response)
 
-    return response.json()
-
-def delete_report(*, report_id, base_url, user, password, verify=True):
+def delete(*, login, endpoint):
     """
-    Accept named args report_id, base_url, user, password (strings)
-    Return deleted report response.
+    Accept named args login (nexpose.login) and endpoint (string)
+    Return delete against nexpose.
     """
-    url = base_url + "/api/3/reports/" + str(report_id)
+    url = f"{login.base_url}/{endpoint}"
     head = {"Accept": "application/json"}
     response = requests.delete(
-        url, auth=(user, password), headers=head, verify=verify
+        url, auth=(login.user, login.password), headers=head, verify=login.verify
     )
     _require_response_200_ok(response)
 
     return response.json()
 
-def scans(*, base_url, user, password, verify=True, page=0, size=10):
+
+def put(*, login, endpoint, data=[]):
     """
-    Accept named args base_url, username, password (strings)
-    Return scans response.
+    Accept named args login (nexpose.login) and endpoint (string)
+    Return put against nexpose.
     """
-    url = base_url + "/api/3/scans"
+    url = f"{login.base_url}/{endpoint}"
     head = {"Accept": "application/json"}
-    params = {'page': page, 'size': size}
-    response = requests.get(
-        url, auth=(user, password), headers=head, verify=verify, params = params
+    response = requests.put(
+        url, auth=(login.user, login.password), headers=head, verify=login.verify
     )
     _require_response_200_ok(response)
 
     return response.json()
 
-def sites(*, base_url, user, password, verify=True, page=0, size=10):
+
+def engines(login):
     """
-    Accept named args base_url, username, password (strings)
-    Return sites response.
+    Accept login (nexpose.login).
+    Return scan engines resources.
     """
-    url = base_url + "/api/3/sites"
-    head = {"Accept": "application/json"}
+    return get(login=login, endpoint="api/3/scan_engines")['resources']
+
+
+def engine_pools(login):
+    """
+    Accept login (nexpose.login).
+    Return pools resources.
+    """
+    return get(login=login, endpoint="api/3/scan_engine_pools")['resources']
+
+
+def reports(*, login, page=0, size=10):
+    """
+    Accept named args login (nexpose.login), page, size (int).
+    Return paginated reports response.
+    """
     params = {'page': page, 'size': size}
-    response = requests.get(
-        url, auth=(user, password), headers=head, verify=verify, params = params
-    )
-    _require_response_200_ok(response)
+    return get(login=login, endpoint="api/3/reports", params=params)
 
-    return response.json()
 
-def site(*, site_id, base_url, user, password, verify=True):
+def report_history(*, login, report_id):
     """
-    Accept named args base_url, username, password (strings)
+    Accept named args login (nexpose.login), report_id (int).
+    Return report history reponse.
+    """
+    return get(login=login, endpoint=f"api/3/reports/{report_id}/history")
+
+
+def delete_report(*, login, report_id):
+    """
+    Accept named args login (nexpose.login), report_id (int).
+    Return deleted report response.
+    """
+    return delete(login=login, endpoint=f"api/3/reports/{report_id}")
+
+
+def scans(*, login, page=0, size=10):
+    """
+    Accept named args login (nexpose.login), page, size (int).
+    Return paginated scans response.
+    """
+    params = {'page': page, 'size': size}
+    return get(login=login, endpoint="api/3/scans", params=params)
+
+
+def sites(*, login, page=0, size=10):
+    """
+    Accept named args login (nexpose.login), page, size (int).
+    Return paginated sites response.
+    """
+    params = {'page': page, 'size': size}
+    return get(login=login, endpoint="api/3/sites", params=params)
+
+
+def site(*, login, site_id):
+    """
+    Accept named args login (nexpose.login), site_id (int).
     Return site response.
     """
-    url = base_url + "/api/3/sites/" + str(site_id)
-    head = {"Accept": "application/json"}
-    response = requests.get(
-        url, auth=(user, password), headers=head, verify=verify
-    )
-    _require_response_200_ok(response)
+    return get(login=login, endpoint=f"api/3/sites/{site_id}")
 
-    return response.json()
 
-def site_id_older_than(*, site_id, base_url, user, password, verify=True, days=90):
+def site_id_older_than(*, login, site_id, days=90):
     """
-    Accept named args base_url, username, password (strings)
+    Accept named args login (nexpose.login), site_id (int),
+    optional days (int, default 90).
     Return True is site is older than days,
     otherwise return False
     """
@@ -166,13 +177,7 @@ def site_id_older_than(*, site_id, base_url, user, password, verify=True, days=9
     max_age = timedelta(days=days)
     start_dates = [
         schedule['start']
-        for schedule in schedules(
-            site_id=site_id,
-            base_url=base_url,
-            user=user,
-            password=password,
-            verify=verify,
-        )["resources"]
+        for schedule in schedules(login=login, site_id=site_id)
     ]
     if len(start_dates) == 0:
         return True
@@ -186,62 +191,34 @@ def site_id_older_than(*, site_id, base_url, user, password, verify=True, days=9
     return True
 
 
-def delete_site(*, site_id, base_url, user, password, verify=True):
+def delete_site(*, login, site_id):
     """
-    Accept named args base_url, username, password (strings)
-    Delete site and return site_id,
-    otherwise raise Exception.
+    Accept named args login (nexpose.login), site_id (int).
+    Return deleted site response.
     """
-    url = f"{base_url}/api/3/sites/{site_id}"
-    head = {"Accept": "application/json"}
-    response = requests.delete(
-        url, auth=(user, password), headers=head, verify=verify
-    )
-    _require_response_200_ok(response)
-
-    return response.json()
+    return delete(login=login, endpoint=f"api/3/sites/{site_id}")
 
 
-def schedules(*, site_id, base_url, user, password, verify=True):
+def schedules(*, login, site_id):
     """
-    Accept named args base_url, username, password (strings)
-    Return schedules response.
+    Accept named args login (nexpose.login), site_id (int).
+    Return schedules resources.
     """
-    url = f"{base_url}/api/3/sites/{site_id}/scan_schedules"
-    head = {"Accept": "application/json"}
-    response = requests.get(
-        url, auth=(user, password), headers=head, verify=verify
-    )
-    _require_response_200_ok(response)
+    return get(login=login, endpoint=f"api/3/sites/{site_id}/scan_schedules")['resources']
 
-    return response.json()
 
-def assets(*, base_url, user, password, verify=True, page=0, size=10):
+def assets(*, login, page=0, size=10):
     """
-    Accept named args base_url, username, password (strings)
-    Return assets response.
+    Accept named args login (nexpose.login), page, size (int).
+    Return paginated assets response.
     """
-    url = base_url + "/api/3/assets"
-    head = {"Accept": "application/json"}
     params = {'page': page, 'size': size}
-    response = requests.get(
-        url, auth=(user, password), headers=head, verify=verify, params = params
-    )
-    _require_response_200_ok(response)
+    return get(login=login, endpoint="api/3/assets", params=params)
 
-    return response.json()
 
-def create_role(*, role, base_url, user, password, verify=True):
+def create_role(*, login, role):
     """
-    Accept named args role (hash), base_url, user, password (strings)
+    Accept named args login (nexpose.login), role (dict).
     Return created role response.
     """
-    url = base_url + "/api/3/roles/" + role['id']
-    head = {"Accept": "application/json"}
-    response = requests.put(
-        url, auth=(user, password), headers=head, verify=verify, data=role,
-    )
-    _require_response_200_ok(response)
-
-    return response.json()
-
+    return put(login=login, endpoint=f"api/3/roles/{role['id']}", data=role)
