@@ -6,8 +6,10 @@ Python3 bindings for the Nexpose API v3
 from collections import namedtuple
 from datetime import datetime, timedelta
 import urllib3
-urllib3.disable_warnings()
+
 import requests
+
+urllib3.disable_warnings()
 
 class NexposeException(Exception):
     """
@@ -40,7 +42,7 @@ def _require_response_200_ok(response):
     return True
 
 
-def login(*, base_url, user, password, verify=True):
+def nsclogin(*, base_url, user, password, verify=True):
     """
     Accept named args base_url, username, password (strings),
     optionally verify (Boolean default True).
@@ -58,7 +60,7 @@ def get(*, login, endpoint, params=[]):
     url = f"{login.base_url}/{endpoint}"
     head = {"Accept": "application/json"}
     response = requests.get(
-        url, 
+        url,
         auth=(login.user, login.password),
         headers=head,
         verify=login.verify,
@@ -92,7 +94,7 @@ def put(*, login, endpoint, data=[]):
     url = f"{login.base_url}/{endpoint}"
     head = {"Accept": "application/json"}
     response = requests.put(
-        url, auth=(login.user, login.password), headers=head, verify=login.verify
+        url, auth=(login.user, login.password), headers=head, verify=login.verify, data=data,
     )
     _require_response_200_ok(response)
 
@@ -182,7 +184,7 @@ def site_id_older_than(*, login, site_id, days=90):
     if len(start_dates) == 0:
         return True
     for date in start_dates:
-        # Nexpose date example: 
+        # Nexpose date example:
         # '2020-11-01T11:22:27Z'
         print(date)
         start_time = datetime.strptime(date, '%Y-%m-%dT%H:%M:%SZ')
