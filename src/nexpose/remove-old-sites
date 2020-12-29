@@ -17,10 +17,10 @@ def main():
         "--regex",
         help="""Regex to match site names on. Do not delete site names which
         do not match this regex.
-        Default is '.*Company_[0-9]+_ProjId_[0-9]+_Instance_[-a-z0-9_]+'
+        Default is '.*'
         """,
         action="store",
-        default=".*Company_[0-9]+_ProjId_[0-9]+_Instance_[-a-z0-9_]+",
+        default=".*",
     )
 
     args = parser.parse_args()
