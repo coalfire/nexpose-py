@@ -2,8 +2,8 @@
 
 import re
 
-import nexpose
-import nexposeargs
+import nexpose.nexpose as nexpose
+import nexpose.nexposeargs as nexposeargs
 
 def main():
     """

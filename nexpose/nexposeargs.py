@@ -3,7 +3,8 @@ Parse common arguments for nexpose-py command line programs.
 """
 
 import argparse
-import get_credentials
+
+import nexpose.get_credentials as get_credentials
 
 parser = argparse.ArgumentParser()
 

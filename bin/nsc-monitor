@@ -7,8 +7,8 @@ from itertools import count
 from collections import defaultdict
 from time import sleep
 
-import nexpose
-import nexposeargs
+import nexpose.nexpose as nexpose
+import nexpose.nexposeargs as nexposeargs
 
 def get_scans(login):
     """
