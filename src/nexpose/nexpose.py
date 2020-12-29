@@ -4,9 +4,10 @@
 Python3 bindings for the Nexpose API v3
 """
 
-import requests
+from datetime import datetime, timedelta
 import urllib3
 urllib3.disable_warnings()
+import requests
 
 class NexposeException(Exception):
     """
@@ -146,7 +147,67 @@ def site(*, site_id, base_url, user, password, verify=True):
     Accept named args base_url, username, password (strings)
     Return site response.
     """
-    url = base_url + "/api/3/sites" + str(site_id)
+    url = base_url + "/api/3/sites/" + str(site_id)
+    head = {"Accept": "application/json"}
+    response = requests.get(
+        url, auth=(user, password), headers=head, verify=verify
+    )
+    _require_response_200_ok(response)
+
+    return response.json()
+
+def site_id_older_than(*, site_id, base_url, user, password, verify=True, days=90):
+    """
+    Accept named args base_url, username, password (strings)
+    Return True is site is older than days,
+    otherwise return False
+    """
+    now = datetime.now()
+    max_age = timedelta(days=days)
+    start_dates = [
+        schedule['start']
+        for schedule in schedules(
+            site_id=site_id,
+            base_url=base_url,
+            user=user,
+            password=password,
+            verify=verify,
+        )["resources"]
+    ]
+    if len(start_dates) == 0:
+        return True
+    for date in start_dates:
+        # Nexpose date example: 
+        # '2020-11-01T11:22:27Z'
+        print(date)
+        start_time = datetime.strptime(date, '%Y-%m-%dT%H:%M:%SZ')
+        if now - start_time < max_age:
+            return False
+    return True
+
+
+def delete_site(*, site_id, base_url, user, password, verify=True):
+    """
+    Accept named args base_url, username, password (strings)
+    Delete site and return site_id,
+    otherwise raise Exception.
+    """
+    url = f"{base_url}/api/3/sites/{site_id}"
+    head = {"Accept": "application/json"}
+    response = requests.delete(
+        url, auth=(user, password), headers=head, verify=verify
+    )
+    _require_response_200_ok(response)
+
+    return response.json()
+
+
+def schedules(*, site_id, base_url, user, password, verify=True):
+    """
+    Accept named args base_url, username, password (strings)
+    Return schedules response.
+    """
+    url = f"{base_url}/api/3/sites/{site_id}/scan_schedules"
     head = {"Accept": "application/json"}
     response = requests.get(
         url, auth=(user, password), headers=head, verify=verify
