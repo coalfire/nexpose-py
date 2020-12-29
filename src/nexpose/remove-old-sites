@@ -4,8 +4,6 @@ import re
 
 import nexpose
 import nexposeargs
-import get_credentials
-
 
 def main():
     """
@@ -27,17 +25,14 @@ def main():
 
     args = parser.parse_args()
 
-    user = args.user or get_credentials.user()
-    password = args.password or get_credentials.password()
     base_url = ":".join([args.baseurl, args.port])
-    verify = args.verify
     regex = args.regex
 
     login = nexpose.nsclogin(
         base_url=base_url,
-        user=user,
-        password=password,
-        verify=verify,
+        user=args.user,
+        password=args.password,
+        verify=args.verify,
     )
 
     pages = nexpose.sites(login=login)["page"]["totalPages"]
