@@ -5,7 +5,7 @@ with open("README.rst", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="nexpose-py",
-    version="0.0.4",
+    version="0.0.5",
     author="Noah Birnel",
     author_email="noah.birnel@coalfire.com",
     description="Python3 bindings and CLI tools for Nexpose API version 3",
@@ -39,5 +39,9 @@ setuptools.setup(
     ],
     setup_requires=[
         "wheel",
+    ],
+    data_files=[
+        ('etc/default', ['extras/nexpose-exporter.env']),
+        ('etc/systemd/system', ['extras/nexpose-exporter.service']),
     ],
 )

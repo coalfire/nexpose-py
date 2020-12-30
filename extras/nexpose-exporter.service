@@ -1,15 +1,17 @@
-Description=nexpose exporter for prometheus
+[Unit]
+Description=Monitor Nexpose scans for Prometheus export
+Documentation=https://github.com/coalfire/nexpose-py
 After=syslog.target
 After=network.target
 
 [Service]
 Type=simple
-User=root
-Group=root
-ExecStart=/usr/local/bin/nsc-exporter
-
-# Give the script some time to startup
-TimeoutSec=300
+User=prometheus
+Group=prometheus
+EnvironmentFile=/etc/default/nexpose-exporter
+ExecStart=/usr/local/bin/nsc-exporter $ARGS
+Restart=always
+RestartSec=42sec
 
 [Install]
 WantedBy=multi-user.target
