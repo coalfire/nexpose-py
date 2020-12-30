@@ -42,7 +42,7 @@ def _require_response_200_ok(response):
     return True
 
 
-def nsclogin(*, base_url, user, password, verify=True):
+def login(*, base_url, user, password, verify=True):
     """
     Accept named args base_url, username, password (strings),
     optionally verify (Boolean default True).
@@ -52,18 +52,18 @@ def nsclogin(*, base_url, user, password, verify=True):
     return l(base_url=base_url, user=user, password=password, verify=verify)
 
 
-def get(*, login, endpoint, params=[]):
+def get(*, nlogin, endpoint, params=[]):
     """
-    Accept named args login (nexpose.login), endpoint (string), optional params.
+    Accept named args nlogin (nexpose.login), endpoint (string), optional params.
     Return get against nexpose.
     """
-    url = f"{login.base_url}/{endpoint}"
+    url = f"{nlogin.base_url}/{endpoint}"
     head = {"Accept": "application/json"}
     response = requests.get(
         url,
-        auth=(login.user, login.password),
+        auth=(nlogin.user, nlogin.password),
         headers=head,
-        verify=login.verify,
+        verify=nlogin.verify,
         params=params
     )
     _require_response_200_ok(response)
@@ -71,106 +71,106 @@ def get(*, login, endpoint, params=[]):
     return response.json()
 
 
-def delete(*, login, endpoint):
+def delete(*, nlogin, endpoint):
     """
-    Accept named args login (nexpose.login) and endpoint (string)
+    Accept named args nlogin (nexpose.login) and endpoint (string)
     Return delete against nexpose.
     """
-    url = f"{login.base_url}/{endpoint}"
+    url = f"{nlogin.base_url}/{endpoint}"
     head = {"Accept": "application/json"}
     response = requests.delete(
-        url, auth=(login.user, login.password), headers=head, verify=login.verify
+        url, auth=(nlogin.user, nlogin.password), headers=head, verify=nlogin.verify
     )
     _require_response_200_ok(response)
 
     return response.json()
 
 
-def put(*, login, endpoint, data=[]):
+def put(*, nlogin, endpoint, data=[]):
     """
-    Accept named args login (nexpose.login) and endpoint (string)
+    Accept named args nlogin (nexpose.login) and endpoint (string)
     Return put against nexpose.
     """
-    url = f"{login.base_url}/{endpoint}"
+    url = f"{nlogin.base_url}/{endpoint}"
     head = {"Accept": "application/json"}
     response = requests.put(
-        url, auth=(login.user, login.password), headers=head, verify=login.verify, data=data,
+        url, auth=(nlogin.user, nlogin.password), headers=head, verify=nlogin.verify, data=data,
     )
     _require_response_200_ok(response)
 
     return response.json()
 
 
-def engines(login):
+def engines(nlogin):
     """
-    Accept login (nexpose.login).
+    Accept nlogin (nexpose.login).
     Return scan engines resources.
     """
-    return get(login=login, endpoint="api/3/scan_engines")['resources']
+    return get(nlogin=nlogin, endpoint="api/3/scan_engines")['resources']
 
 
-def engine_pools(login):
+def engine_pools(nlogin):
     """
-    Accept login (nexpose.login).
+    Accept nlogin (nexpose.login).
     Return pools resources.
     """
-    return get(login=login, endpoint="api/3/scan_engine_pools")['resources']
+    return get(nlogin=nlogin, endpoint="api/3/scan_engine_pools")['resources']
 
 
-def reports(*, login, page=0, size=10):
+def reports(*, nlogin, page=0, size=10):
     """
-    Accept named args login (nexpose.login), page, size (int).
+    Accept named args nlogin (nexpose.login), page, size (int).
     Return paginated reports response.
     """
     params = {'page': page, 'size': size}
-    return get(login=login, endpoint="api/3/reports", params=params)
+    return get(nlogin=nlogin, endpoint="api/3/reports", params=params)
 
 
-def report_history(*, login, report_id):
+def report_history(*, nlogin, report_id):
     """
-    Accept named args login (nexpose.login), report_id (int).
+    Accept named args nlogin (nexpose.login), report_id (int).
     Return report history reponse.
     """
-    return get(login=login, endpoint=f"api/3/reports/{report_id}/history")
+    return get(nlogin=nlogin, endpoint=f"api/3/reports/{report_id}/history")
 
 
-def delete_report(*, login, report_id):
+def delete_report(*, nlogin, report_id):
     """
-    Accept named args login (nexpose.login), report_id (int).
+    Accept named args nlogin (nexpose.login), report_id (int).
     Return deleted report response.
     """
-    return delete(login=login, endpoint=f"api/3/reports/{report_id}")
+    return delete(nlogin=nlogin, endpoint=f"api/3/reports/{report_id}")
 
 
-def scans(*, login, page=0, size=10):
+def scans(*, nlogin, page=0, size=10):
     """
-    Accept named args login (nexpose.login), page, size (int).
+    Accept named args nlogin (nexpose.login), page, size (int).
     Return paginated scans response.
     """
     params = {'page': page, 'size': size}
-    return get(login=login, endpoint="api/3/scans", params=params)
+    return get(nlogin=nlogin, endpoint="api/3/scans", params=params)
 
 
-def sites(*, login, page=0, size=10):
+def sites(*, nlogin, page=0, size=10):
     """
-    Accept named args login (nexpose.login), page, size (int).
+    Accept named args nlogin (nexpose.login), page, size (int).
     Return paginated sites response.
     """
     params = {'page': page, 'size': size}
-    return get(login=login, endpoint="api/3/sites", params=params)
+    return get(nlogin=nlogin, endpoint="api/3/sites", params=params)
 
 
-def site(*, login, site_id):
+def site(*, nlogin, site_id):
     """
-    Accept named args login (nexpose.login), site_id (int).
+    Accept named args nlogin (nexpose.login), site_id (int).
     Return site response.
     """
-    return get(login=login, endpoint=f"api/3/sites/{site_id}")
+    return get(nlogin=nlogin, endpoint=f"api/3/sites/{site_id}")
 
 
-def site_id_older_than(*, login, site_id, days=90):
+def site_id_older_than(*, nlogin, site_id, days=90):
     """
-    Accept named args login (nexpose.login), site_id (int),
+    Accept named args nlogin (nexpose.login), site_id (int),
     optional days (int, default 90).
     Return True is site is older than days,
     otherwise return False
@@ -179,7 +179,7 @@ def site_id_older_than(*, login, site_id, days=90):
     max_age = timedelta(days=days)
     start_dates = [
         schedule['start']
-        for schedule in schedules(login=login, site_id=site_id)
+        for schedule in schedules(nlogin=nlogin, site_id=site_id)
     ]
     if len(start_dates) == 0:
         return True
@@ -193,34 +193,34 @@ def site_id_older_than(*, login, site_id, days=90):
     return True
 
 
-def delete_site(*, login, site_id):
+def delete_site(*, nlogin, site_id):
     """
-    Accept named args login (nexpose.login), site_id (int).
+    Accept named args nlogin (nexpose.login), site_id (int).
     Return deleted site response.
     """
-    return delete(login=login, endpoint=f"api/3/sites/{site_id}")
+    return delete(nlogin=nlogin, endpoint=f"api/3/sites/{site_id}")
 
 
-def schedules(*, login, site_id):
+def schedules(*, nlogin, site_id):
     """
-    Accept named args login (nexpose.login), site_id (int).
+    Accept named args nlogin (nexpose.login), site_id (int).
     Return schedules resources.
     """
-    return get(login=login, endpoint=f"api/3/sites/{site_id}/scan_schedules")['resources']
+    return get(nlogin=nlogin, endpoint=f"api/3/sites/{site_id}/scan_schedules")['resources']
 
 
-def assets(*, login, page=0, size=10):
+def assets(*, nlogin, page=0, size=10):
     """
-    Accept named args login (nexpose.login), page, size (int).
+    Accept named args nlogin (nexpose.login), page, size (int).
     Return paginated assets response.
     """
     params = {'page': page, 'size': size}
-    return get(login=login, endpoint="api/3/assets", params=params)
+    return get(nlogin=nlogin, endpoint="api/3/assets", params=params)
 
 
-def create_role(*, login, role):
+def create_role(*, nlogin, role):
     """
-    Accept named args login (nexpose.login), role (dict).
+    Accept named args nlogin (nexpose.login), role (dict).
     Return created role response.
     """
-    return put(login=login, endpoint=f"api/3/roles/{role['id']}", data=role)
+    return put(nlogin=nlogin, endpoint=f"api/3/roles/{role['id']}", data=role)

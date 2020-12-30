@@ -7,8 +7,10 @@ from itertools import count
 from collections import defaultdict
 from time import sleep
 
+import configargparse
+
 import nexpose.nexpose as nexpose
-import nexpose.nexposeargs as nexposeargs
+import nexpose.args as nexposeargs
 
 def get_scans(login):
     """
@@ -16,7 +18,7 @@ def get_scans(login):
     Return a generator of scan information.
     """
     for page in count(0):
-        scan_page = nexpose.scans(login=login, page=page)
+        scan_page = nexpose.scans(nlogin=login, page=page)
         for scan in scan_page["resources"]:
             yield scan
         if page + 1 >= scan_page["page"]["totalPages"]:
@@ -113,9 +115,17 @@ def main():
     """
     Parse arguments.
     """
-    parser = nexposeargs.parser
-    parser.description = "Export Nexpose metrics for Prometheus"
+    # We will make a new parser here in order to use configarparse,
+    # The new parser inherits from the generic parser.
+    # resolve conflicts, since both will provide a help argument.
+    parent = nexposeargs.parser
 
+    parser = configargparse.ArgumentParser(
+        parents=[parent],
+        default_config_files=["/etc/nexpose-exporter.conf"],
+        description="Export Nexpose console metrics for Prometheus.",
+        conflict_handler="resolve",
+    )
     parser.add_argument(
         "-e",
         "--export-directory",
@@ -137,6 +147,15 @@ def main():
         action="store_true",
         default=False,
     )
+    parser.add_argument(
+        "-s",
+        "--single-pass",
+        help="""Perform a single pass collecting data and exit,
+        instead of repeating forever.
+        """,
+        action="store_true",
+        default=False,
+    )
 
     args = parser.parse_args()
 
@@ -144,7 +163,7 @@ def main():
     export_dir = args.export_dir
     single_pass = args.single_pass
 
-    login = nexpose.nsclogin(
+    login = nexpose.login(
         base_url=base_url,
         user=args.user,
         password=args.password,

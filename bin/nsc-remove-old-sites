@@ -3,14 +3,14 @@
 import re
 
 import nexpose.nexpose as nexpose
-import nexpose.nexposeargs as nexposeargs
+import nexpose.args as nexposeargs
 
 def main():
     """
     Parse arguments
     """
     parser = nexposeargs.parser
-    parser.description = "Remove old or unscheduled Nexpose sites"
+    parser.description = "Remove old or unscheduled Nexpose sites."
 
     parser.add_argument(
         "-r",
@@ -28,20 +28,20 @@ def main():
     base_url = ":".join([args.baseurl, args.port])
     regex = args.regex
 
-    login = nexpose.nsclogin(
+    login = nexpose.login(
         base_url=base_url,
         user=args.user,
         password=args.password,
         verify=args.verify,
     )
 
-    pages = nexpose.sites(login=login)["page"]["totalPages"]
+    pages = nexpose.sites(nlogin=login)["page"]["totalPages"]
     site_count = 0
     tried = 0
     deleted = 0
 
     for page in range(pages):
-        resources = nexpose.sites(login=login, page=page)["resources"]
+        resources = nexpose.sites(nlogin=login, page=page)["resources"]
         site_ids = [
             resource["id"]
             for resource in resources
@@ -50,11 +50,11 @@ def main():
         for site_id in site_ids:
             site_count += 1
             print(f"checking site {site_id}")
-            if nexpose.site_id_older_than(login=login, site_id=site_id, days=90):
+            if nexpose.site_id_older_than(nlogin=login, site_id=site_id, days=90):
                 tried += 1
                 try:
                     print(f"deleting site {site_id}")
-                    nexpose.delete_site(login=login, site_id=site_id)
+                    nexpose.delete_site(nlogin=login, site_id=site_id)
                     print(f"deleted site {site_id}")
                     deleted += 1
                 except nexpose.ResponseNotOK as err:

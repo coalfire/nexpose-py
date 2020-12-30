@@ -29,7 +29,7 @@ parser.add_argument(
     default=get_credentials.password(),
 )
 parser.add_argument(
-    "-b",
+    "-i",
     "--baseurl",
     help="""Base url of Nexpose API.
     Default: https://localhost

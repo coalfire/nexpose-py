@@ -23,7 +23,7 @@ clean-build:
 	rm -rfv build
 
 clean-egg:
-	rm -rfv nexpose_coalfire.egg-info
+	rm -rfv nexpose_*.egg-info
 
 clean-venv:
 	rm -rfv venv
