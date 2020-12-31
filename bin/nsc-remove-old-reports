@@ -13,16 +13,9 @@ def main():
 
     config = nexpose.config(args)
 
-    pages = nexpose.reports(nlogin=config)["page"]["totalPages"]
-
-    for page in range(pages):
-        resources = nexpose.reports(nlogin=config, page=page)["resources"]
-        report_ids = [resource['id'] for resource in resources]
-        for report_id in report_ids:
-            history = nexpose.report_history(nlogin=config, report_id=report_id)
-            if len(history['resources']) == 0:
-                nexpose.delete_report(nlogin=config, report_id=report_id)
-                print(report_id)
+    removed = nexpose.remove_old_reports(nlogin=config)
+    for report in removed:
+        print(f"removed report id {report}")
 
 
 if __name__ == "__main__":

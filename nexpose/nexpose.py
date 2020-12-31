@@ -5,6 +5,7 @@ Python3 bindings for the Nexpose API v3
 """
 from collections import namedtuple
 from datetime import datetime, timedelta
+import re
 import urllib3
 
 import requests
@@ -205,7 +206,6 @@ def site_id_older_than(*, nlogin, site_id, days=90):
     for date in start_dates:
         # Nexpose date example:
         # '2020-11-01T11:22:27Z'
-        print(date)
         start_time = datetime.strptime(date, '%Y-%m-%dT%H:%M:%SZ')
         if now - start_time < max_age:
             return False
@@ -243,3 +243,44 @@ def create_role(*, nlogin, role):
     Return created role response.
     """
     return put(nlogin=nlogin, endpoint=f"api/3/roles/{role['id']}", data=role)
+
+
+def remove_old_reports(*, nlogin):
+    """
+    Accept named arg nlogin (nexpose.login).
+    Remove reports with no history.
+    Return a generator of remove report ids.
+    """
+    pages = reports(nlogin=nlogin)["page"]["totalPages"]
+    for page in range(pages):
+        resources = reports(nlogin=nlogin, page=page)["resources"]
+        report_ids = [resource['id'] for resource in resources]
+        for report in report_ids:
+            history = report_history(nlogin=nlogin, report_id=report)
+            if not history['resources']:
+                delete_report(nlogin=nlogin, report_id=report)
+                yield report
+
+
+def remove_old_sites(*, nlogin, days=90, regex=".*"):
+    """
+    Accept named args nlogin (nexpose.login),
+    optionally days (int) and regex (str).
+    Remove sites older than days, if it matches regex.
+    Return a generator of remove site ids.
+    """
+    pages = sites(nlogin=nlogin)["page"]["totalPages"]
+    for page in range(pages):
+        resources = sites(nlogin=nlogin, page=page)["resources"]
+        site_ids = [
+            resource["id"]
+            for resource in resources
+            if re.fullmatch(regex, resource['name'])
+        ]
+        for site_id in site_ids:
+            if site_id_older_than(nlogin=nlogin, site_id=site_id, days=days):
+                try:
+                    delete_site(nlogin=nlogin, site_id=site_id)
+                    yield site_id
+                except ResponseNotOK as err:
+                    print(f"something went wrong with {site_id}: {err}")
