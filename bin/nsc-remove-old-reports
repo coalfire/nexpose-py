@@ -13,8 +13,8 @@ def main():
 
     config = nexpose.config(args)
 
-    removed = nexpose.remove_old_reports(nlogin=config)
-    for report in removed:
+    reports = nexpose.remove_old_reports(nlogin=config)
+    for report in reports:
         print(f"removed report id {report}")
 
 

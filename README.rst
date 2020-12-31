@@ -1,7 +1,9 @@
 nexpose-py
 ==========
 
-Python3 bindings and CLI tools for the Nexpose API version 3.
+Python3 bindings and CLI tools for
+`Nexpose <https://www.rapid7.com/products/nexpose/>`_
+API version 3.
 
 cli programs
 ------------
@@ -10,11 +12,24 @@ nsc-exporter
 ~~~~~~~~~~~~
 
 A `Prometheus <https://prometheus.io/>`_ exporter for
-`Nexpose <https://www.rapid7.com/products/nexpose/>`_ scan console metrics.
+Nexpose scan console metrics.
 
 A ``systemd`` service file is provided at
 ``etc/systemd/system/nexpose-exporter.service``,
 and a sample env file at ``etc/defaults/nexpose-exporter.env``.
+These will be relative to your virtualenv for a virtualenv install,
+relative to ``$HOME/.local`` for a ``pip install --user`` install,
+and (probably, depending on your OS) relative to ``/usr/local`` for a
+root pip install.
+
+nsc-janitor
+~~~~~~~~~~~~
+
+Maintenance service for Nexpose scan console.
+
+A ``systemd`` service file is provided at
+``etc/systemd/system/nexpose-janitor.service``,
+and a sample env file at ``etc/defaults/nexpose-janitor.env``.
 These will be relative to your virtualenv for a virtualenv install,
 relative to ``$HOME/.local`` for a ``pip install --user`` install,
 and (probably, depending on your OS) relative to ``/usr/local`` for a

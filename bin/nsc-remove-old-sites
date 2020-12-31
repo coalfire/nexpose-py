@@ -35,8 +35,8 @@ def main():
     regex = args.regex
     days = args.days
 
-    removed = nexpose.remove_old_sites(nlogin=config, days=days, regex=regex)
-    for site in removed:
+    sites = nexpose.remove_old_sites(nlogin=config, days=days, regex=regex)
+    for site in sites:
         print(f"deleted site id {site}")
 
 

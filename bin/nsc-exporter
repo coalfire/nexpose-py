@@ -148,20 +148,19 @@ def main():
         default=False,
     )
     parser.add_argument(
-        "-s",
-        "--single-pass",
-        help="""Perform a single pass collecting data and exit,
-        instead of repeating forever.
+        "-l",
+        "--lag",
+        help="""Lag in seconds between repeating main loop.
+        Default is 3600 (1 hour). Set higher for larger amounts of data.
         """,
         action="store_true",
         default=False,
     )
 
     args = parser.parse_args()
-
     export_dir = args.export_dir
     single_pass = args.single_pass
-
+    lag = args.lag
     config = nexpose.config(args)
 
     while True:
@@ -173,7 +172,7 @@ def main():
             pass
         if single_pass:
             break
-        sleep(60)
+        sleep(lag)
 
 
 if __name__ == "__main__":

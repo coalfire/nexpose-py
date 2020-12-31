@@ -5,7 +5,7 @@ with open("README.rst", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="nexpose-py",
-    version="0.0.8",
+    version="0.0.13",
     author="Noah Birnel",
     author_email="noah.birnel@coalfire.com",
     description="Python3 bindings and CLI tools for Nexpose API version 3",
@@ -29,6 +29,7 @@ setuptools.setup(
         "bin/nsc-engine-pools",
         "bin/nsc-make-exporter-privileges",
         "bin/nsc-exporter",
+        "bin/nsc-janitor",
         "bin/nsc-remove-old-reports",
         "bin/nsc-remove-old-sites",
     ],
@@ -44,5 +45,7 @@ setuptools.setup(
     data_files=[
         ('etc/default', ['extras/nexpose-exporter.env']),
         ('etc/systemd/system', ['extras/nexpose-exporter.service']),
+        ('etc/default', ['extras/nexpose-janitor.env']),
+        ('etc/systemd/system', ['extras/nexpose-janitor.service']),
     ],
 )
