@@ -121,6 +121,21 @@ def put(*, nlogin, endpoint, data=[]):
     return response.json()
 
 
+def _generator(*, nlogin, endpoint):
+    """
+    Accept named args nlogin (nexpose.login) and endpoint (str)
+    Return generator object of paginated resources.
+    """
+    pages = get(nlogin=nlogin, endpoint=endpoint)["page"]["totalPages"]
+    for page in range(pages):
+        for resource in get(
+            nlogin=nlogin,
+            endpoint=endpoint,
+            params={'page': page},
+            )["resources"]:
+                yield resource
+
+
 def engines(nlogin):
     """
     Accept nlogin (nexpose.login).
@@ -137,13 +152,12 @@ def engine_pools(nlogin):
     return get(nlogin=nlogin, endpoint="api/3/scan_engine_pools")['resources']
 
 
-def reports(*, nlogin, page=0, size=10):
+def reports(nlogin):
     """
-    Accept named args nlogin (nexpose.login), page, size (int).
-    Return paginated reports response.
+    Accept nlogin (nexpose.login).
+    Return generator of reports responses.
     """
-    params = {'page': page, 'size': size}
-    return get(nlogin=nlogin, endpoint="api/3/reports", params=params)
+    return _generator(nlogin=nlogin, endpoint="api/3/reports")
 
 
 def report_history(*, nlogin, report_id):
@@ -162,22 +176,36 @@ def delete_report(*, nlogin, report_id):
     return delete(nlogin=nlogin, endpoint=f"api/3/reports/{report_id}")
 
 
-def scans(*, nlogin, page=0, size=10):
+def users(nlogin):
     """
-    Accept named args nlogin (nexpose.login), page, size (int).
-    Return paginated scans response.
+    Accept nlogin (nexpose.login).
+    Return generator of users resources
     """
-    params = {'page': page, 'size': size}
-    return get(nlogin=nlogin, endpoint="api/3/scans", params=params)
+    return _generator(nlogin=nlogin, endpoint="api/3/users")
 
 
-def sites(*, nlogin, page=0, size=10):
+def delete_user(*, nlogin, user_id):
     """
-    Accept named args nlogin (nexpose.login), page, size (int).
-    Return paginated sites response.
+    Accept nlogin (nexpose.login), user_id(int).
+    Return deleted users response.
     """
-    params = {'page': page, 'size': size}
-    return get(nlogin=nlogin, endpoint="api/3/sites", params=params)
+    return delete(nlogin=nlogin, endpoint=f"api/3/users/{user_id}")
+
+
+def scans(nlogin):
+    """
+    Accept nlogin (nexpose.login).
+    Return generator of scans resources.
+    """
+    return _generator(nlogin=nlogin, endpoint="api/3/scans")
+
+
+def sites(nlogin):
+    """
+    Accept nlogin (nexpose.login).
+    Return generator of sites resources.
+    """
+    return _generator(nlogin=nlogin, endpoint="api/3/sites")
 
 
 def site(*, nlogin, site_id):
@@ -225,16 +253,17 @@ def schedules(*, nlogin, site_id):
     Accept named args nlogin (nexpose.login), site_id (int).
     Return schedules resources.
     """
-    return get(nlogin=nlogin, endpoint=f"api/3/sites/{site_id}/scan_schedules")['resources']
+    return get(
+        nlogin=nlogin,
+        endpoint=f"api/3/sites/{site_id}/scan_schedules")['resources']
 
 
-def assets(*, nlogin, page=0, size=10):
+def assets(nlogin):
     """
-    Accept named args nlogin (nexpose.login), page, size (int).
-    Return paginated assets response.
+    Accept nlogin (nexpose.login).
+    Return generator of assets responses.
     """
-    params = {'page': page, 'size': size}
-    return get(nlogin=nlogin, endpoint="api/3/assets", params=params)
+    return _generator(nlogin=nlogin, endpoint="api/3/assets")
 
 
 def create_role(*, nlogin, role):
@@ -251,15 +280,12 @@ def remove_old_reports(*, nlogin):
     Remove reports with no history.
     Return a generator of remove report ids.
     """
-    pages = reports(nlogin=nlogin)["page"]["totalPages"]
-    for page in range(pages):
-        resources = reports(nlogin=nlogin, page=page)["resources"]
-        report_ids = [resource['id'] for resource in resources]
-        for report in report_ids:
-            history = report_history(nlogin=nlogin, report_id=report)
-            if not history['resources']:
-                delete_report(nlogin=nlogin, report_id=report)
-                yield report
+    report_ids = (report['id'] for report in reports(nlogin))
+    for report in report_ids:
+        history = report_history(nlogin=nlogin, report_id=report)
+        if not history['resources']:
+            delete_report(nlogin=nlogin, report_id=report)
+            yield report
 
 
 def remove_old_sites(*, nlogin, days=90, regex=".*"):
@@ -269,18 +295,15 @@ def remove_old_sites(*, nlogin, days=90, regex=".*"):
     Remove sites older than days, if it matches regex.
     Return a generator of remove site ids.
     """
-    pages = sites(nlogin=nlogin)["page"]["totalPages"]
-    for page in range(pages):
-        resources = sites(nlogin=nlogin, page=page)["resources"]
-        site_ids = [
-            resource["id"]
-            for resource in resources
-            if re.fullmatch(regex, resource['name'])
-        ]
-        for site_id in site_ids:
-            if site_id_older_than(nlogin=nlogin, site_id=site_id, days=days):
-                try:
-                    delete_site(nlogin=nlogin, site_id=site_id)
-                    yield site_id
-                except ResponseNotOK as err:
-                    print(f"something went wrong with {site_id}: {err}")
+    site_ids = (
+        site["id"]
+        for site in sites(nlogin)
+        if re.fullmatch(regex, site['name'])
+    )
+    for site_id in site_ids:
+        if site_id_older_than(nlogin=nlogin, site_id=site_id, days=days):
+            try:
+                delete_site(nlogin=nlogin, site_id=site_id)
+                yield site_id
+            except ResponseNotOK as err:
+                print(f"something went wrong with {site_id}: {err}")

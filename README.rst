@@ -88,5 +88,5 @@ alternatives
 ``nexpose`` (`<https://pypi.org/project/nexpose/>`_ )
 is the official python binding for Nexpose API versions 1.1 and 1.2.
 
-``nexpose-rest`` (`<https://pypi.org/project/nexpose/>`_) is unofficial.
-It is auto-generated and far more comprehensive than ``nexpose-py``.
+``nexpose-rest`` (`<https://pypi.org/project/nexpose-rest/>`_) is unofficial.
+It is (partially?) auto-generated and more comprehensive than ``nexpose-py``.
