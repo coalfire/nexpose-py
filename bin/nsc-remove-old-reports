@@ -11,26 +11,17 @@ def main():
     parser.description = "Remove old Nexpose reports."
     args = parser.parse_args()
 
-    base_url = ':'.join([args.baseurl, args.port])
+    config = nexpose.config(args)
 
-    user = args.user or get_credentials.user()
-    password = args.password or get_credentials.password()
-    login = nexpose.login(
-        base_url=base_url,
-        user=user,
-        password=password,
-        verify=args.verify,
-    )
-
-    pages = nexpose.reports(nlogin=login)["page"]["totalPages"]
+    pages = nexpose.reports(nlogin=config)["page"]["totalPages"]
 
     for page in range(pages):
-        resources = nexpose.reports(nlogin=login, page=page)["resources"]
+        resources = nexpose.reports(nlogin=config, page=page)["resources"]
         report_ids = [resource['id'] for resource in resources]
         for report_id in report_ids:
-            history = nexpose.report_history(nlogin=login, report_id=report_id)
+            history = nexpose.report_history(nlogin=config, report_id=report_id)
             if len(history['resources']) == 0:
-                nexpose.delete_report(nlogin=login, report_id=report_id)
+                nexpose.delete_report(nlogin=config, report_id=report_id)
                 print(report_id)
 
 

@@ -9,6 +9,8 @@ import urllib3
 
 import requests
 
+import nexpose.get_credentials as get_credentials
+
 urllib3.disable_warnings()
 
 class NexposeException(Exception):
@@ -40,6 +42,23 @@ def _require_response_200_ok(response):
             status_code=response.status_code, message=response.text
         )
     return True
+
+
+def config(args):
+    """
+    Accept args (argparser Namespace).
+    Return nexpose.login
+    """
+    base_url = ':'.join([args.baseurl, args.port])
+    
+    user = args.user or get_credentials.user()
+    password = args.password or get_credentials.password()
+    return login(
+        base_url=base_url,
+        user=user,
+        password=password,
+        verify=args.verify,
+    )
 
 
 def login(*, base_url, user, password, verify=True):

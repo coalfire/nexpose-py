@@ -43,9 +43,13 @@ Basic usage:
 
     nexpose.engines(nlogin=login)
 
-For argument parsing:
+
+With CLI argument parsing:
 
 .. code-block:: python
+
+    import nexpose.nexpose as nexpose
+    import nexpose.args as nexposeargs
 
     parser = nexposeargs.parser
     parser.description = "My nexpose script"
@@ -57,20 +61,17 @@ For argument parsing:
     )
 
     args = parser.parse_args()
+    config = nexpose.config(args)
 
-    base_url = ':'.join([args.baseurl, args.port])
+    nexpose.engines(nlogin=config)
+    print(f"my foo argument was {args.foo}")
 
-    login = nexpose.login(
-        base_url=base_url,
-        user=args.user,
-        password=args.password,
-        verify=args.verify,
-    )
 
 alternatives
 ------------
 
-``nexpose`` is the official python binding for Nexpose API versions 1.1 and 1.2
+``nexpose`` (`<https://pypi.org/project/nexpose/>`_ )
+is the official python binding for Nexpose API versions 1.1 and 1.2.
 
-``nexpose-rest`` is unofficial. It is auto-generated and thus far more
-comprehensive than ``nexpose-py``.
+``nexpose-rest`` (`<https://pypi.org/project/nexpose/>`_) is unofficial.
+It is auto-generated and far more comprehensive than ``nexpose-py``.
