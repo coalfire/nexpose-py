@@ -4,8 +4,6 @@ Parse common arguments for nexpose-py command line programs.
 
 import argparse
 
-import nexpose.get_credentials as get_credentials
-
 parser = argparse.ArgumentParser()
 
 parser.add_argument(
@@ -16,7 +14,6 @@ parser.add_argument(
     If that variable is not set, prompt.
     """,
     action="store",
-    default=get_credentials.user(),
 )
 parser.add_argument(
     "-p",
@@ -26,7 +23,6 @@ parser.add_argument(
     If that variable is not set, prompt.
     """,
     action="store",
-    default=get_credentials.password(),
 )
 parser.add_argument(
     "-i",
