@@ -10,13 +10,12 @@ def main():
     Parse arguments
     """
     parser = nexposeargs.parser
-    parser.description = "List Nexpose engine pools."
+    parser.description = "List Nexpose users."
     args = parser.parse_args()
 
     config = nexpose.config(args)
 
-    print(json.dumps(list(nexpose.engine_pools(nlogin=config)), indent=2))
-
+    print(json.dumps(list(nexpose.users(nlogin=config)), indent=2))
 
 if __name__ == "__main__":
     main()

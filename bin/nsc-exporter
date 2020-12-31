@@ -153,8 +153,9 @@ def main():
         help="""Lag in seconds between repeating main loop.
         Default is 3600 (1 hour). Set higher for larger amounts of data.
         """,
-        action="store_true",
-        default=False,
+        action="store",
+        type=int,
+        default=3600,
     )
 
     args = parser.parse_args()

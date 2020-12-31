@@ -17,6 +17,7 @@ def main():
         Default is 90.
         """,
         action="store",
+        type=int,
         default=90,
     )
     parser.add_argument(

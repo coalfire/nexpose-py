@@ -28,4 +28,7 @@ clean-egg:
 clean-venv:
 	rm -rfv venv
 
+local:
+	pip install .
+
 .PHONY: clean clean-all clean-dist clean-build clean-egg clean-venv

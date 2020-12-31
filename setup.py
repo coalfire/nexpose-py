@@ -5,7 +5,7 @@ with open("README.rst", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="nexpose-py",
-    version="0.0.14",
+    version="0.0.15",
     author="Noah Birnel",
     author_email="noah.birnel@coalfire.com",
     description="Python3 bindings and CLI tools for Nexpose API version 3",
@@ -28,11 +28,12 @@ setuptools.setup(
     scripts = [
         "bin/nsc-delete-user",
         "bin/nsc-engine-pools",
-        "bin/nsc-make-exporter-privileges",
         "bin/nsc-exporter",
         "bin/nsc-janitor",
+        "bin/nsc-make-exporter-privileges",
         "bin/nsc-remove-old-reports",
         "bin/nsc-remove-old-sites",
+        "bin/nsc-users",
     ],
     install_requires=[
         "urllib3>=1.10.0",
