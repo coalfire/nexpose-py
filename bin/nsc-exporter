@@ -12,19 +12,6 @@ import configargparse
 import nexpose.nexpose as nexpose
 import nexpose.args as nexposeargs
 
-def get_scans(login):
-    """
-    Accept base_url, user, password, verify.
-    Return a generator of scan information.
-    """
-    for page in count(0):
-        scan_page = nexpose.scans(nlogin=login, page=page)
-        for scan in scan_page["resources"]:
-            yield scan
-        if page + 1 >= scan_page["page"]["totalPages"]:
-            break
-
-
 def get_metrics(scans):
     """
     Accept a list of Nexpose API v 3 scan objects.
@@ -157,7 +144,7 @@ def main():
 
     while True:
         try:
-            scans = get_scans(login=config)
+            scans = nexpose.scans(nlogin=config)
             metrics = get_metrics(scans)
             export_metrics(metrics, export_dir)
         except nexpose.requests.exceptions.RequestException:
