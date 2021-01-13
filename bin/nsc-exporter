@@ -43,16 +43,7 @@ def get_metrics(scans):
 
         this_message = scan.get("message", False)
         if this_message:
-            metrics["messages"] += 1
-            if "Scan failed to start on engine" in this_message:
-                metrics["message"]["failed_to_start"] += 1
-            if "ngine is not responding" in this_message:
-                metrics["message"]["engine_not_responding"] += 1
-            if "Available resources are insufficient" in this_message:
-                metrics["message"]["insufficient_resources"] += 1
-            if "console cannot contact the scan engine" in this_message:
-                metrics["message"]["cannot_contact_engine"] += 1
-            metrics["raw"][this_message] += 1
+            metrics["message"][this_message] +=1
 
     return metrics
 
