@@ -14,6 +14,12 @@ nsc-exporter
 A `Prometheus <https://prometheus.io/>`_ exporter for
 Nexpose scan console metrics.
 
+It is a good idea to create a Nexpose user and role specifically for this,
+with permissions only to:
+
+- "View Site Asset Data"
+- "View Group Asset Data".
+
 A ``systemd`` service file is provided at
 ``etc/systemd/system/nexpose-exporter.service``,
 and a sample env file at ``etc/defaults/nexpose-exporter.env``.
@@ -26,6 +32,15 @@ nsc-janitor
 ~~~~~~~~~~~~
 
 Maintenance service for Nexpose scan console.
+This will remove sites and reports older than 90 days.
+
+It is a good idea to create a Nexpose user and role specifically for this,
+with permissions only to:
+
+- "Manage Sites"
+- "Manage Report Templates".
+- "View Group Asset Data"
+- "Manage Report Access"
 
 A ``systemd`` service file is provided at
 ``etc/systemd/system/nexpose-janitor.service``,
