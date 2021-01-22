@@ -3,90 +3,55 @@
 import datetime
 import os
 
-from itertools import count
-from collections import defaultdict
 from time import sleep
 
 import configargparse
+from prometheus_client import CollectorRegistry, Gauge, write_to_textfile
 
 import nexpose.nexpose as nexpose
 import nexpose.args as nexposeargs
 
-def get_metrics(scans):
+
+def export_metrics(scans, export):
     """
-    Accept a list of Nexpose API v 3 scan objects.
-    Return a dict of status (dict), message (dict), and messages (int)
+    Accept scans (list of Nexpose API v 3 scan objects)
+    and export (file-like object to write export to).
+    Write export file. Return None on success; raise exception on failure.
     """
 
-    status = defaultdict(int)
-    message = defaultdict(int)
-    raw = defaultdict(int)
-    metrics = {"status": status, "message": message, "messages": 0, "raw": raw}
+    registry = CollectorRegistry()
+    status = Gauge(
+        name="nexpose_scan_status",
+        documentation="Nexpose scan statuses",
+        labelnames=["status"],
+        registry=registry,
+    )
+    message = Gauge(
+        name="nexpose_scan_message",
+        documentation="Nexpose scan messages",
+        labelnames=["message"],
+        registry=registry,
+    )
+    last_run = Gauge(
+        name="nexpose_scan_metrics_last_run_time_seconds",
+        documentation="time in seconds since 1970 of last run",
+        registry=registry,
+    )
 
     for scan in scans:
         this_status = scan.get("status", False)
         if this_status:
-            metrics["status"][this_status] += 1
+            status.labels(status=this_status).inc()
 
         this_message = scan.get("message", False)
         if this_message:
-            metrics["message"][this_message] +=1
+            message.labels(message=this_message).inc()
 
-    return metrics
+    now = str(datetime.datetime.utcnow().timestamp())
+    last_run.set(now)
 
+    write_to_textfile(export, registry)
 
-def export_metrics(metrics, export_dir):
-    """
-    Accepts metrics (dict) and export_dir.
-    Write a file of those metrics to the export_dir.
-    Return True on success,
-    False on failure.
-    """
-
-    filename = "nexpose_scan_metrics.prom"
-    now = datetime.datetime.utcnow().timestamp()
-    temp_filename = filename + "." + str(now)
-    temp_file = os.path.join(export_dir, temp_filename)
-    export_file = os.path.join(export_dir, filename)
-
-    try:
-        with open(temp_file, "w+") as t:
-            # HELP node_systemd_unit_state Systemd unit
-            # TYPE node_systemd_unit_state gauge
-            t.write("# HELP nexpose_scan_status Status of Nexpose scans\n")
-            t.write("# TYPE nexpose_scan_status gauge\n")
-            for metric, value in metrics["status"].items():
-                t.write(
-                    'nexpose_scan_status{status="'
-                    + metric
-                    + '"} '
-                    + str(value)
-                    + "\n"
-                )
-            t.write("# HELP nexpose_scan_message Nexpose scans message\n")
-            t.write("# TYPE nexpose_scan_message gauge\n")
-            for metric, value in metrics["message"].items():
-                t.write(
-                    'nexpose_scan_message{message="'
-                    + metric
-                    + '"} '
-                    + str(value)
-                    + "\n"
-                )
-            t.write("# HELP nexpose_scan_messages Nexpose scans messages\n")
-            t.write("# TYPE nexpose_scan_messages gauge\n")
-            t.write("nexpose_scan_messages " + str(metrics["messages"]) + "\n")
-            t.write("# HELP nexpose_scan_metrics_last_run_time_seconds time in seconds since 1970 of last run\n")
-            t.write("# TYPE nexpose_scan_metrics_last_run_time_seconds gauge\n")
-            t.write(
-                "nexpose_scan_metrics_last_run_time_seconds "
-                + str(now)
-                + "\n"
-            )
-        os.rename(temp_file, export_file)
-        return True
-    except:
-        return False
 
 
 def main():
@@ -106,15 +71,15 @@ def main():
     )
     parser.add_argument(
         "-e",
-        "--export-directory",
-        help="""Directory to export metrics to.
-        Default is /var/lib/node_exporter/textfile_collector.
-        Be sure this process has write access to the directory,
-        and that the reading process can read the file and list the directory.
+        "--export-file",
+        help="""File to export metrics to.
+        Default is
+        /var/lib/node_exporter/textfile_collector/nexpose_scan_metrics.prom.
+        Be sure this process has write access to the file and parent directory.
         """,
         action="store",
-        default="/var/lib/node_exporter/textfile_collector",
-        dest="export_dir",
+        default="/var/lib/node_exporter/textfile_collector/nexpose_scan_metrics.prom",
+        dest="export",
     )
     parser.add_argument(
         "-s",
@@ -137,7 +102,7 @@ def main():
     )
 
     args = parser.parse_args()
-    export_dir = args.export_dir
+    export = args.export
     single_pass = args.single_pass
     lag = args.lag
     config = nexpose.config(args)
@@ -145,8 +110,7 @@ def main():
     while True:
         try:
             scans = nexpose.scans(nlogin=config)
-            metrics = get_metrics(scans)
-            export_metrics(metrics, export_dir)
+            export_metrics(scans, export)
         except nexpose.requests.exceptions.RequestException:
             pass
         if single_pass:
